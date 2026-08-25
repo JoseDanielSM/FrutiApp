@@ -1,6 +1,13 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'Widgets/boton_ingresar.dart';
+import 'Widgets/campo_correo.dart';
+import 'Widgets/campo_password.dart';
+import 'Widgets/producto_card.dart';
+import 'Widgets/titulo_app.dart';
 
 void main() {
   runApp(const FrutiApp());
@@ -47,51 +54,15 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'FrutiApp',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    const TituloApp(),
 
                     const SizedBox(height: 20),
 
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Correo electrónico',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ingrese el correo';
-                        }
-
-                        if (!value.contains('@') ||
-                            !value.contains('.')) {
-                          return 'Correo no válido';
-                        }
-
-                        return null;
-                      },
-                    ),
+                    const CampoCorreo(),
 
                     const SizedBox(height: 15),
 
-                    TextFormField(
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Contraseña',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.length < 6) {
-                          return 'La contraseña debe tener al menos 6 caracteres';
-                        }
-
-                        return null;
-                      },
-                    ),
+                    const CampoPassword(),
 
                     Row(
                       children: [
@@ -109,21 +80,17 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 15),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HomePage(),
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Ingresar'),
-                      ),
+                    BotonIngresar(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HomePage(),
+                            ),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -162,7 +129,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> productos;
 
-  // Lista de frutas para el catálogo
   final List<String> frutas = [
     'Manzana',
     'Banano',
@@ -267,6 +233,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
     productos = cargarProductos();
   }
 
@@ -279,14 +246,12 @@ class _HomePageState extends State<HomePage> {
       body: FutureBuilder<List<dynamic>>(
         future: productos,
         builder: (context, snapshot) {
-          // Estado de carga
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          // Estado de error
           if (snapshot.hasError) {
             return const Center(
               child: Text(
@@ -298,7 +263,6 @@ class _HomePageState extends State<HomePage> {
             );
           }
 
-          // Estado exitoso
           final productos = snapshot.data!;
 
           return ListView.builder(
@@ -308,30 +272,15 @@ class _HomePageState extends State<HomePage> {
 
               final int id = producto['id'];
 
-              // Asignamos una fruta según el ID recibido de la API
-              final String nombre = frutas[(id - 1) % frutas.length];
+              final String nombre =
+                  frutas[(id - 1) % frutas.length];
 
               final int precio = id * 100;
 
-              return Card(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: ListTile(
-                  title: Text(
-                    nombre,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Precio: $precio colones',
-                  ),
-                  trailing: Text(
-                    'ID: $id',
-                  ),
-                ),
+              return ProductoCard(
+                nombre: nombre,
+                id: id,
+                precio: precio,
               );
             },
           );
