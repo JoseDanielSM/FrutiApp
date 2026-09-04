@@ -1,30 +1,38 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-import 'package:frutiapp_web/main.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:frutiapp_web/models/access_record.dart';
+import 'package:frutiapp_web/services/access_log_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('Access log behavior', () {
+    test('stores valid access information without passwords', () {
+      final service = AccessLogService();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      service.add(
+        AccessRecord(
+          usuario: 'admin@gmail.com',
+          fechaHora: DateTime(2026, 9, 3, 10, 0, 0),
+          exitoso: true,
+        ),
+      );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(service.records.length, 1);
+      expect(service.records.first.usuario, 'admin');
+      expect(service.records.first.exitoso, isTrue);
+      expect(service.exportJson(), isNot(contains('123456')));
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('imports JSON and clears invalid fields', () {
+      final service = AccessLogService();
+      const source = '''[
+        {"usuario":"user1","fechaHora":"2026-09-03T10:00:00.000","exitoso":true},
+        {"usuario":"user2","fechaHora":"2026-09-03T10:05:00.000","exitoso":false}
+      ]''';
+
+      service.importJson(source);
+
+      expect(service.records.length, 2);
+      expect(service.records[1].usuario, 'user2');
+      expect(service.records[1].exitoso, isFalse);
+    });
   });
 }

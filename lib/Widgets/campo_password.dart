@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 
 class CampoPassword extends StatelessWidget {
-  const CampoPassword({super.key});
+  final TextEditingController controller;
+  final bool obscureText;
+  final Widget? suffixIcon;
+
+  const CampoPassword({
+    super.key,
+    required this.controller,
+    this.obscureText = true,
+    this.suffixIcon,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      obscureText: true,
-      decoration: const InputDecoration(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
         labelText: 'Contraseña',
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
+        suffixIcon: suffixIcon,
       ),
       validator: (value) {
         if (value == null || value.length < 6) {
